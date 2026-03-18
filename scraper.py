@@ -1,22 +1,18 @@
 import os
-from serpapi import GoogleSearch
 
+from serpapi import GoogleSearch
 
 # Search queries - location-based ones get {location} substituted
 LOCATION_QUERIES = [
-    "software developer jobs in {location}",
-    "software engineer jobs in {location}",
-    "backend developer jobs in {location}",
-    "full stack developer jobs in {location}",
+    "data analyst jobs in {location}",
+    "data engineer jobs in {location}",
+    "data scientist jobs in {location}",
 ]
 
 REMOTE_QUERIES = [
-    "remote software developer jobs",
-    "remote software engineer jobs",
-    "remote backend developer jobs",
-    "remote cloud engineer jobs",
+    "remote data analyst jobs",
     "remote data engineer jobs",
-    "remote full stack developer jobs",
+    "remote data scientist jobs",
 ]
 
 
