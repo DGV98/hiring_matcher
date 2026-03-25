@@ -55,11 +55,13 @@ RESUME_KEYWORDS = {
 }
 
 # --- Scoring Weights ---
+# Note: weights below sum to 1.0. RECENCY_WEIGHT is an additive bonus (max +0.10).
 
 SKILLS_WEIGHT = 0.45
 TITLE_WEIGHT = 0.25
 LOCATION_WEIGHT = 0.15
 KEYWORD_WEIGHT = 0.15
+RECENCY_WEIGHT = 0.10  # Bonus for recently posted jobs (0 = week+ old, 1 = <24h)
 
 
 def load_env():

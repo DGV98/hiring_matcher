@@ -9,6 +9,7 @@ from email.mime.text import MIMEText
 from config import (
     KEYWORD_WEIGHT,
     LOCATION_WEIGHT,
+    RECENCY_WEIGHT,
     RESUME_CLOUD,
     RESUME_KEYWORDS,
     RESUME_SKILLS,
@@ -17,6 +18,7 @@ from config import (
     TITLE_WEIGHT,
     load_env,
 )
+from job_tracker import filter_unseen, mark_recommended, seen_count
 from scraper import fetch_jobs
 
 # Pre-compile word-boundary patterns for short skill names to avoid false positives
@@ -64,6 +66,11 @@ def _get_apply_url(job):
     return job.get("share_link") or job.get("related_links", [{}])[0].get("link", "") if job.get("related_links") else ""
 
 
+def _get_posted_at(job):
+    """Return a human-readable posted date string, or empty string."""
+    return (job.get("detected_extensions") or {}).get("posted_at") or ""
+
+
 def _is_remote(job):
     """Check if job is remote."""
     title = _get_job_title(job)
@@ -76,6 +83,44 @@ def _is_remote(job):
     if "remote" in text:
         return True
     return False
+
+
+# --- Recency ---
+
+def _recency_bonus(job):
+    """
+    Return a 0.0–1.0 recency factor based on the job's posted_at field.
+    1.0 = posted within 24h, 0.0 = posted 1+ week ago.
+    """
+    posted = _get_posted_at(job).lower()
+    if not posted:
+        return 0.0
+
+    if "just now" in posted or "today" in posted:
+        return 1.0
+
+    m = re.search(r"(\d+)\s*hour", posted)
+    if m:
+        return 1.0
+
+    m = re.search(r"(\d+)\s*day", posted)
+    if m:
+        days = int(m.group(1))
+        if days == 1:
+            return 0.8
+        if days == 2:
+            return 0.6
+        if days <= 3:
+            return 0.4
+        if days <= 7:
+            return 0.2
+        return 0.05  # "30+ days ago" still gets a tiny bump over no info
+
+    m = re.search(r"(\d+)\s*week", posted)
+    if m:
+        return 0.1 if int(m.group(1)) == 1 else 0.0
+
+    return 0.0
 
 
 # --- Scoring functions ---
@@ -128,16 +173,17 @@ def _keyword_score(text):
 
 
 def score_job(job, preferred_location):
-    """Compute a raw score (0.0-1.0) for a single job."""
+    """Compute a raw score for a single job. Base weights sum to 1.0; recency is an additive bonus."""
     text = _get_job_text(job)
     title = _get_job_title(job)
 
-    return (
+    base = (
         SKILLS_WEIGHT * _skills_score(text)
         + TITLE_WEIGHT * _title_score(title)
         + LOCATION_WEIGHT * _location_score(job, preferred_location)
         + KEYWORD_WEIGHT * _keyword_score(text)
     )
+    return base + RECENCY_WEIGHT * _recency_bonus(job)
 
 
 def _matched_skills(job):
@@ -188,19 +234,21 @@ def build_html_email(top_jobs, preferred_location):
         apply_url = _get_apply_url(job)
         skills = ", ".join(sorted(_matched_skills(job)))
         remote = _is_remote(job)
+        posted = _get_posted_at(job)
 
         loc_display = location.title()
         if remote:
             loc_display += " (Remote)"
 
         title_html = f'<a href="{apply_url}">{title}</a>' if apply_url else title
+        posted_html = f'<br/><span style="color:#27ae60; font-size:11px;">&#9679; {posted}</span>' if posted else ""
         bg = "#f9f9f9" if rank % 2 == 0 else "#ffffff"
 
         rows += f"""
         <tr style="background-color: {bg};">
             <td style="padding: 8px; text-align: center;">{rank}</td>
             <td style="padding: 8px; text-align: center; font-weight: bold;">{final}</td>
-            <td style="padding: 8px;">{title_html}</td>
+            <td style="padding: 8px;">{title_html}{posted_html}</td>
             <td style="padding: 8px;">{company}</td>
             <td style="padding: 8px;">{loc_display}</td>
             <td style="padding: 8px; font-size: 12px;">{skills}</td>
@@ -224,6 +272,7 @@ def build_html_email(top_jobs, preferred_location):
         </table>
         <p style="color: #888; font-size: 12px; margin-top: 16px;">
             Score is normalized (0-100) across all fetched jobs. Higher = better match to your resume.
+            &#9679; Green dot = recently posted (recency bonus applied).
         </p>
     </body>
     </html>
@@ -257,6 +306,53 @@ def send_email(top_jobs, preferred_location):
         return False
 
 
+def _offer_tailored_resumes(top_jobs):
+    """After showing top jobs, ask if the user wants AI-tailored resumes for any."""
+    try:
+        from tailor_resume import generate_pdf, load_experience, tailor_with_claude
+    except ImportError as e:
+        print(f"\nResume tailoring unavailable (missing dependency): {e}")
+        print("Run: pipenv install anthropic reportlab")
+        return
+
+    experience = load_experience()
+    if not experience:
+        return
+
+    print("\nGenerate a tailored one-page resume for any of these jobs?")
+    print("Enter rank(s) separated by commas (e.g. 1,3) or press Enter to skip:")
+    choice = input("> ").strip()
+    if not choice:
+        return
+
+    ranks = []
+    for part in choice.split(","):
+        part = part.strip()
+        if part.isdigit() and 1 <= int(part) <= len(top_jobs):
+            ranks.append(int(part))
+
+    if not ranks:
+        return
+
+    for rank in ranks:
+        job, _, _ = top_jobs[rank - 1]
+        title = job.get("title") or "Unknown"
+        company = _get_job_company(job)
+        description = job.get("description") or ""
+
+        if not description:
+            print(f"  #{rank} {title} — no description available, skipping.")
+            continue
+
+        print(f"\n  Tailoring resume for #{rank}: {title} at {company}...")
+        try:
+            tailored = tailor_with_claude(experience, title, company, description)
+            pdf_path = generate_pdf(experience, tailored, title, company)
+            print(f"  Saved: {pdf_path}")
+        except Exception as e:
+            print(f"  Error generating resume: {e}")
+
+
 def main():
     load_env()
 
@@ -269,6 +365,14 @@ def main():
 
     if not jobs:
         print("No jobs found. Check your SERPAPI_KEY in .env.")
+        return
+
+    already_seen = seen_count()
+    jobs = filter_unseen(jobs)
+    print(f"Filtered out already-recommended jobs ({already_seen} in history). {len(jobs)} new jobs to score.")
+
+    if not jobs:
+        print("All fetched jobs have already been recommended. Try again tomorrow for fresh listings.")
         return
 
     print(f"\nScoring {len(jobs)} jobs against your resume...")
@@ -288,6 +392,7 @@ def main():
         remote = _is_remote(job)
         skills = ", ".join(sorted(_matched_skills(job)))
         url = _get_apply_url(job)
+        posted = _get_posted_at(job)
 
         loc_str = location.title()
         if remote:
@@ -296,6 +401,8 @@ def main():
         print(f"  #{rank}  Score: {final}/100  (raw: {raw:.3f})")
         print(f"      {title}")
         print(f"      {company} — {loc_str}")
+        if posted:
+            print(f"      Posted: {posted}")
         print(f"      Skills: {skills}")
         if url:
             print(f"      Apply: {url}")
@@ -305,8 +412,12 @@ def main():
     if send_email(top_10, preferred):
         sender = os.environ.get("GMAIL_ADDRESS")
         print(f"Email sent to {sender}")
+        mark_recommended([job for job, _, _ in top_10])
+        print(f"Recorded {len(top_10)} jobs to history (will not be recommended again).")
     else:
         print("Failed to send email. Results are printed above.")
+
+    _offer_tailored_resumes(top_10)
 
 
 if __name__ == "__main__":

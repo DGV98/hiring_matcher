@@ -1,0 +1,113 @@
+{
+  "_note": "Master experience file. Claude uses this to tailor resumes per job. Add more bullets or entries over time.",
+  "contact": {
+    "name": "David Gonzalez-Velez",
+    "email": "davidgonzalez1019@gmail.com",
+    "phone": "(224) 619-0926",
+    "location": "Chicago, IL",
+    "linkedin": "",
+    "github": "github.com/dgv98"
+  },
+  "experience": [
+    {
+      "title": "Software Developer",
+      "company": "Snap On Credit",
+      "location": "Chicago, IL",
+      "start_date": "May 2025",
+      "end_date": "Present",
+      "bullets": [
+        "Modernized a legacy PICK Basic collection system used by 300 internal users, updating interfaces with Python/HTML/CSS and improving UI consistency",
+        "Designed and deployed a new SMS delivery system replacing discontinued carrier email-to-text services, enabling 1,000–2,000 automated messages/month via a vendor API",
+        "Migrated the full legacy platform to a modern terminal emulator and ported programs into an API-driven architecture, improving maintainability and enabling new web-based interfaces"
+      ]
+    },
+    {
+      "title": "Research Assistant",
+      "company": "Loyola University",
+      "location": "Chicago, IL",
+      "start_date": "Oct 2023",
+      "end_date": "Present",
+      "bullets": [
+        "Developed and maintained a full-stack facial recognition application using React, Flask, and Vercel; spearheaded CI pipeline implementation with GitHub Actions",
+        "Led migration to Chakra UI improving UX and system accuracy by 50% through analysis of facial embedding thresholds",
+        "Organized stand-ups, established a Kanban board for task tracking, and coordinated with stakeholders to align research objectives"
+      ]
+    },
+    {
+      "title": "Senior Software Engineer",
+      "company": "Smyl Fitness Rx",
+      "location": "Remote",
+      "start_date": "Jan 2023",
+      "end_date": "Sep 2024",
+      "bullets": [
+        "Spearheaded end-to-end development of functional health screening software, managing 2 developer teams and launching the product within 3 months",
+        "Integrated MoveNet pose estimation algorithms to assess functional health data, achieving a 50% improvement in screening precision over the initial version"
+      ]
+    },
+    {
+      "title": "Software Engineer",
+      "company": "Capgemini Financial Services",
+      "location": "Chicago, IL",
+      "start_date": "Aug 2021",
+      "end_date": "Oct 2022",
+      "bullets": [
+        "Developed and maintained data pipelines for a credit card management system",
+        "Managed SQL relational databases on Azure Cloud to support a credit card user application"
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "AI Math Problem Generator",
+      "technologies": ["Python", "Flask", "React", "OpenAI API", "Heroku", "Mezmo"],
+      "bullets": [
+        "Built a REST API using Flask and OpenAI's API to generate math problems by category and difficulty",
+        "Created a React frontend with TeX rendering to display mathematical equations in a user-friendly format",
+        "Deployed on Heroku and integrated Mezmo for server-side log monitoring"
+      ]
+    },
+    {
+      "name": "Game Hub Application",
+      "technologies": ["React", "TypeScript", "RAWG API", "Vercel", "CI/CD"],
+      "bullets": [
+        "Built a game discovery app leveraging the RAWG public API with React",
+        "Deployed on Vercel with a CI/CD pipeline to maintain up-to-date functionality"
+      ]
+    },
+    {
+      "name": "Hiring Matcher",
+      "technologies": ["Python", "SerpAPI", "SQLite", "Claude API", "reportlab"],
+      "bullets": [
+        "Built an automated job-matching tool that scores job postings against a resume and emails daily top-10 matches",
+        "Implemented weighted scoring engine (skills, title, location, recency) with z-score normalization",
+        "Integrated AI-powered resume tailoring that generates custom one-page PDFs via Claude API"
+      ]
+    }
+  ],
+  "education": [
+    {
+      "degree": "B.S. Molecular Engineering – Quantum Track",
+      "institution": "The University of Chicago",
+      "graduation": "Jun 2021",
+      "gpa": "",
+      "relevant_courses": []
+    },
+    {
+      "degree": "Quantum Science, Networking, and Communications Certification",
+      "institution": "The University of Chicago – Graham School",
+      "graduation": "Jun 2025",
+      "gpa": "",
+      "relevant_courses": []
+    }
+  ],
+  "certifications": [
+    "Microsoft Azure Administrator Associate (2021)"
+  ],
+  "skills": {
+    "languages": ["Python", "JavaScript", "TypeScript", "SQL", "R", "C", "Qiskit", "LaTeX"],
+    "frameworks": ["React", "Flask", "Django", "Flutter"],
+    "cloud_devops": ["AWS", "GCP", "Azure", "Terraform", "GitHub Actions", "CI/CD", "Vercel", "Heroku"],
+    "tools": ["Supabase", "REST APIs", "Chakra UI", "Git", "Kanban"],
+    "other": ["PICK Basic", "Fluent Spanish"]
+  }
+}
