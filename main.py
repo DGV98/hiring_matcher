@@ -19,7 +19,6 @@ from config import (
     load_env,
 )
 from job_tracker import filter_unseen, mark_recommended, seen_count
-from scraper import fetch_jobs
 
 # Pre-compile word-boundary patterns for short skill names to avoid false positives
 _SKILL_PATTERNS = {}
@@ -353,8 +352,24 @@ def _offer_tailored_resumes(top_jobs):
             print(f"  Error generating resume: {e}")
 
 
+def _select_scraper():
+    """Prompt user to choose a scraper and return its fetch_jobs function."""
+    print("Select scraper:")
+    print("  1) SerpAPI / Google Jobs (requires SERPAPI_KEY, 100 free searches/month)")
+    print("  2) JobSpy — LinkedIn, Indeed, Glassdoor, ZipRecruiter (free, no API key)")
+    choice = input("Choice [1/2] (default: 2): ").strip()
+    if choice == "1":
+        from scraper import fetch_jobs
+        return fetch_jobs
+    else:
+        from scraper_v2 import fetch_jobs
+        return fetch_jobs
+
+
 def main():
     load_env()
+
+    fetch_jobs = _select_scraper()
 
     preferred = input("Enter preferred location (default: Chicago): ").strip()
     if not preferred:
@@ -364,7 +379,7 @@ def main():
     jobs = fetch_jobs(preferred)
 
     if not jobs:
-        print("No jobs found. Check your SERPAPI_KEY in .env.")
+        print("No jobs found.")
         return
 
     already_seen = seen_count()

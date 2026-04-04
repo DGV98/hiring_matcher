@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 requests = "*"
 google-search-results = "*"
+python-jobspy = "*"
 pymupdf = "*"
 anthropic = "*"
 reportlab = "*"
