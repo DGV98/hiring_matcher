@@ -15,28 +15,28 @@ from serpapi import GoogleSearch
 #     "remote data scientist jobs",
 # ]
 #
-QUANTUM_LOCATION_QUERIES = [
-    "quantum software engineer jobs in {location}",
-    "quantum computing engineer jobs in {location}",
-    "quantum software developer jobs in {location}",
-]
-
-QUANTUM_REMOTE_QUERIES = [
-    "remote quantum software engineer jobs",
-    "remote quantum computing software engineer jobs",
-    "remote quantum developer jobs",
-]
-# LOCATION_QUERIES = [
-#     "software engineer jobs in {location}",
-#     "backend engineer jobs in {location}",
-#     "full stack engineer jobs in {location}",
+# QUANTUM_LOCATION_QUERIES = [
+#     "quantum software engineer jobs in {location}",
+#     "quantum computing engineer jobs in {location}",
+#     "quantum software developer jobs in {location}",
 # ]
 #
-# REMOTE_QUERIES = [
-#     "remote software engineer jobs",
-#     "remote backend engineer jobs",
-#     "remote full stack engineer jobs",
+# QUANTUM_REMOTE_QUERIES = [
+#     "remote quantum software engineer jobs",
+#     "remote quantum computing software engineer jobs",
+#     "remote quantum developer jobs",
 # ]
+LOCATION_QUERIES = [
+    "software engineer jobs in {location}",
+    "backend engineer jobs in {location}",
+    "full stack engineer jobs in {location}",
+]
+
+REMOTE_QUERIES = [
+    "remote software engineer jobs",
+    "remote backend engineer jobs",
+    "remote full stack engineer jobs",
+]
 
 
 def fetch_jobs(location_name, max_pages_per_query=3):
@@ -54,8 +54,8 @@ def fetch_jobs(location_name, max_pages_per_query=3):
     all_jobs = []
     seen = set()  # dedupe by title+company
 
-    queries = [q.format(location=location_name) for q in QUANTUM_LOCATION_QUERIES]
-    queries += QUANTUM_REMOTE_QUERIES
+    queries = [q.format(location=location_name) for q in LOCATION_QUERIES]
+    queries += REMOTE_QUERIES
 
     for query in queries:
         print(f"Searching: {query}")
