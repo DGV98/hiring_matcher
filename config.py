@@ -3,6 +3,7 @@ import os
 # --- Resume Data (structured for reliable scoring) ---
 
 RESUME_SKILLS = {
+    "agile",
     "c",
     "chakra ui",
     "ci/cd",
@@ -11,10 +12,10 @@ RESUME_SKILLS = {
     "flask",
     "flutter",
     "github actions",
-    "heroku",
     "html",
     "javascript",
     "kanban",
+    "php",
     "pick basic",
     "python",
     "qiskit",
@@ -22,7 +23,7 @@ RESUME_SKILLS = {
     "react",
     "rest api",
     "sql",
-    "supabase",
+    "tailwind",
     "terraform",
     "typescript",
     "vercel",
@@ -43,14 +44,13 @@ RESUME_TITLES = [
 
 RESUME_KEYWORDS = {
     "api",
-    "cloud",
-    "data pipeline",
+    "etl",
     "facial recognition",
-    "front end",
+    "frontend",
     "full-stack",
-    "monitoring",
     "pose estimation",
     "quantum",
+    "real-time",
     "rest api",
 }
 
